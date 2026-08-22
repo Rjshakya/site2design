@@ -23,6 +23,12 @@
     "onlyBuiltDependencies": [
       "esbuild",
       "lightningcss"
+    ],
+    "ignoredBuiltDependencies": [
+      "msgpackr-extract",
+      "msw",
+      "unrs-resolver",
+      "workerd"
     ]
   }
 }
