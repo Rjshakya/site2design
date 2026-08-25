@@ -5,3 +5,10 @@ export class BrightDataError extends Schema.TaggedError<BrightDataError>()("Brig
   type: Schema.String,
   status: Schema.Number,
 }) {}
+
+export class CollectorSetupError extends Schema.TaggedError<CollectorSetupError>()(
+  "CollectorSetupError",
+  {
+    message: Schema.String,
+  },
+) {}

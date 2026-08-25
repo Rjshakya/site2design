@@ -1,5 +1,4 @@
-import { Context, Effect, Layer } from "effect";
-import { bdclient } from "@brightdata/sdk";
+import { Context, Effect, Layer, Option } from "effect";
 import { AppConfig, BDConfig } from "../../env";
 import { apiFetch } from "../../lib/fetch";
 import type {
@@ -10,10 +9,15 @@ import type {
   AIJobProgress,
   TriggerSelfHealingInput,
   ResumeSelfHealingInput,
-  TriggerCollectionInput,
-  TriggerCollectionQuery,
-  TriggerCollectionResult,
-  DatasetResult,
+  TriggerBatchCollectionInput,
+  TriggerBatchCollectionQuery,
+  TriggerBatchCollectionResult,
+  BatchDatasetResult,
+  TriggerImmediateInput,
+  TriggerImmediateQuery,
+  TriggerImmediateResult,
+  GetTriggerImmediateResultQuery,
+  GetTriggerImmediateResult,
 } from "./type";
 
 // ─── Constants ──────────────────────────────────────────────────────────────
@@ -26,9 +30,6 @@ const BrightDataClientMake = Effect.gen(function* () {
   const { BD_CONFIG } = yield* AppConfig;
   const { BD_API_TOKEN } = BD_CONFIG;
 
-  console.log("BD_COFIG", BD_CONFIG);
-
-  const client = new bdclient({ apiKey: BD_API_TOKEN });
 
   const createCollector = (input: CreateCollectorInput) =>
     apiFetch<Collector>(
@@ -94,10 +95,10 @@ const BrightDataClientMake = Effect.gen(function* () {
       "BrightDataFetchError",
     );
 
-  const triggerCollection = (
+  const triggerBatchCollection = (
     collectorId: string,
-    inputs: TriggerCollectionInput,
-    query: TriggerCollectionQuery,
+    inputs: TriggerBatchCollectionInput,
+    query: TriggerBatchCollectionQuery,
   ) => {
     const params = new URLSearchParams();
     for (const [key, value] of Object.entries(query)) {
@@ -105,7 +106,7 @@ const BrightDataClientMake = Effect.gen(function* () {
     }
     params.set("collector", query.collector ?? collectorId);
 
-    return apiFetch<TriggerCollectionResult>(
+    return apiFetch<TriggerBatchCollectionResult>(
       {
         apiToken: BD_API_TOKEN,
         base_url: BD_BASE_URL,
@@ -116,8 +117,8 @@ const BrightDataClientMake = Effect.gen(function* () {
     );
   };
 
-  const getDataset = (id: string) =>
-    apiFetch<DatasetResult>(
+  const getBatchDataset = (id: string) =>
+    apiFetch<BatchDatasetResult>(
       {
         apiToken: BD_API_TOKEN,
         base_url: BD_BASE_URL,
@@ -126,16 +127,53 @@ const BrightDataClientMake = Effect.gen(function* () {
       "BrightDataFetchError",
     );
 
+  const triggerImmediateCollection = (
+    collectorId: string,
+    input: TriggerImmediateInput,
+    query: TriggerImmediateQuery,
+  ) => {
+    const params = new URLSearchParams();
+    params.set("collector", query.collector ?? collectorId);
+    if (query.version !== undefined) params.set("version", query.version);
+
+    return apiFetch<TriggerImmediateResult>(
+      {
+        apiToken: BD_API_TOKEN,
+        base_url: BD_BASE_URL,
+        path: `/dca/trigger_immediate?${params.toString()}`,
+        init: { method: "POST", body: JSON.stringify(input) },
+      },
+      "BrightDataFetchError",
+    );
+  };
+
+  const getTriggerImmediateResult = (query: GetTriggerImmediateResultQuery) => {
+    const params = new URLSearchParams();
+    for (const [key, value] of Object.entries(query)) {
+      if (value !== undefined) params.set(key, String(value));
+    }
+
+    return apiFetch<GetTriggerImmediateResult>(
+      {
+        apiToken: BD_API_TOKEN,
+        base_url: BD_BASE_URL,
+        path: `/dca/get_result?${params.toString()}`,
+      },
+      "BrightDataFetchError",
+    );
+  };
+
   return {
-    client,
     createCollector,
     triggerAIJob,
     getAIJobStatus,
     triggerSelfHealing,
     getSelfHealingStatus,
     resumeSelfHealing,
-    triggerCollection,
-    getDataset,
+    triggerBatchCollection,
+    getBatchDataset,
+    triggerImmediateCollection,
+    getTriggerImmediateResult,
   };
 });
 
@@ -144,7 +182,7 @@ export class BrightDataClient extends Context.Service<BrightDataClient>()(
   {
     make: BrightDataClientMake,
   },
-) {}
+) { }
 
 // ─── Service ────────────────────────────────────────────────────────────────
 
@@ -152,24 +190,32 @@ const BrightDataServiceMake = Effect.gen(function* () {
   const config = yield* BDConfig;
   const client = yield* BrightDataClient;
 
+  const collectorId = Option.getOrElse(config.BD_COLLECTOR_ID, () => "");
+
   return {
     createCollector: client.createCollector,
-    triggerAIJob: (input: TriggerAIJobInput) => client.triggerAIJob(config.BD_COLLECTOR_ID, input),
-    getAIJobStatus: () => client.getAIJobStatus(config.BD_COLLECTOR_ID),
+    triggerAIJob: (input: TriggerAIJobInput) => client.triggerAIJob(collectorId, input),
+    getAIJobStatus: () => client.getAIJobStatus(collectorId),
     triggerSelfHealing: (input: TriggerSelfHealingInput) =>
-      client.triggerSelfHealing(config.BD_COLLECTOR_ID, input),
-    getSelfHealingStatus: () => client.getSelfHealingStatus(config.BD_COLLECTOR_ID),
+      client.triggerSelfHealing(collectorId, input),
+    getSelfHealingStatus: () => client.getSelfHealingStatus(collectorId),
     resumeSelfHealing: (input: ResumeSelfHealingInput) =>
-      client.resumeSelfHealing(config.BD_COLLECTOR_ID, input),
-    triggerCollection: (input: TriggerCollectionInput, query: TriggerCollectionQuery = {}) =>
-      client.triggerCollection(config.BD_COLLECTOR_ID, input, query),
-    getDataset: (id: string) => client.getDataset(id),
+      client.resumeSelfHealing(collectorId, input),
+    triggerBatchCollection: (
+      input: TriggerBatchCollectionInput,
+      query: TriggerBatchCollectionQuery = {},
+    ) => client.triggerBatchCollection(collectorId, input, query),
+    getBatchDataset: (id: string) => client.getBatchDataset(id),
+    triggerImmediateCollection: (input: TriggerImmediateInput, query: TriggerImmediateQuery) =>
+      client.triggerImmediateCollection(collectorId, input, query),
+    getTriggerImmediateResult: (query: GetTriggerImmediateResultQuery) =>
+      client.getTriggerImmediateResult(query),
   };
 });
 
 export class BrightDataService extends Context.Service<BrightDataService>()("service/brightdata", {
   make: BrightDataServiceMake,
-}) {}
+}) { }
 
 // ─── Live Layers ────────────────────────────────────────────────────────────
 

@@ -7,13 +7,19 @@ import type {
   AIJobProgressSchema,
   TriggerSelfHealingInputSchema,
   ResumeSelfHealingInputSchema,
-  TriggerCollectionInputSchema,
-  TriggerCollectionQuerySchema,
-  TriggerCollectionResultSchema,
-  DatasetQuerySchema,
-  DatasetBuildingSchema,
-  DatasetRecordSchema,
-  DatasetResultSchema,
+  TriggerBatchCollectionInputSchema,
+  TriggerBatchCollectionQuerySchema,
+  TriggerBatchCollectionResultSchema,
+  BatchDatasetQuerySchema,
+  BatchDatasetBuildingSchema,
+  BatchDatasetRecordSchema,
+  BatchDatasetResultSchema,
+  TriggerImmediateQuerySchema,
+  TriggerImmediateInputSchema,
+  TriggerImmediateResultSchema,
+  GetTriggerImmediateResultQuerySchema,
+  GetTriggerImmediateResultSchema,
+  GetTriggerImmediateResultPendingSchema,
 } from "./schema";
 
 export type CollectorDeliver = typeof CollectorDeliverSchema.Type;
@@ -33,16 +39,27 @@ export type TriggerSelfHealingInput = typeof TriggerSelfHealingInputSchema.Type;
 
 export type ResumeSelfHealingInput = typeof ResumeSelfHealingInputSchema.Type;
 
-export type TriggerCollectionInput = typeof TriggerCollectionInputSchema.Type;
+export type TriggerBatchCollectionInput = typeof TriggerBatchCollectionInputSchema.Type;
 
-export type TriggerCollectionQuery = typeof TriggerCollectionQuerySchema.Type;
+export type TriggerBatchCollectionQuery = typeof TriggerBatchCollectionQuerySchema.Type;
 
-export type TriggerCollectionResult = typeof TriggerCollectionResultSchema.Type;
+export type TriggerBatchCollectionResult = typeof TriggerBatchCollectionResultSchema.Type;
 
-export type DatasetQuery = typeof DatasetQuerySchema.Type;
+export type BatchDatasetQuery = typeof BatchDatasetQuerySchema.Type;
 
-export type DatasetBuilding = typeof DatasetBuildingSchema.Type;
+export type BatchDatasetBuilding = typeof BatchDatasetBuildingSchema.Type;
 
-export type DatasetRecord = typeof DatasetRecordSchema.Type;
+export type BatchDatasetRecord = typeof BatchDatasetRecordSchema.Type;
 
-export type DatasetResult = typeof DatasetResultSchema.Type;
+export type BatchDatasetResult = typeof BatchDatasetResultSchema.Type;
+
+export type TriggerImmediateQuery = typeof TriggerImmediateQuerySchema.Type;
+
+export type TriggerImmediateInput = typeof TriggerImmediateInputSchema.Type;
+
+export type TriggerImmediateResult = typeof TriggerImmediateResultSchema.Type;
+
+export type GetTriggerImmediateResultQuery = typeof GetTriggerImmediateResultQuerySchema.Type;
+
+export type GetTriggerImmediatePendingResult = typeof GetTriggerImmediateResultPendingSchema.Type;
+export type GetTriggerImmediateResult = typeof GetTriggerImmediateResultSchema.Type;

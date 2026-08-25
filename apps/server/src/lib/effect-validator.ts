@@ -2,9 +2,13 @@ import { Cause, Exit, Option, Schema } from "effect";
 import { validator } from "hono/validator";
 import type { ValidationTargets } from "hono";
 
-type Target = keyof ValidationTargets;
-
-export const effectValidator = <S extends Schema.Decoder<any, never>>(target: Target, schema: S) =>
+export const effectValidator = <
+  S extends Schema.Decoder<any, never>,
+  Target extends keyof ValidationTargets = keyof ValidationTargets,
+>(
+  target: Target,
+  schema: S,
+) =>
   validator(target, async (value, c) => {
     const result = Schema.decodeUnknownExit(schema)(value);
 
@@ -16,4 +20,3 @@ export const effectValidator = <S extends Schema.Decoder<any, never>>(target: Ta
     c.req.addValidatedData(target, result.value as object);
     return result.value;
   });
-

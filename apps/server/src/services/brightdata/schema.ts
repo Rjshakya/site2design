@@ -34,7 +34,7 @@ export const CollectorSchema = Schema.Struct({
 });
 
 export const TriggerAIJobInputSchema = Schema.Struct({
-  description: Schema.String,
+  description: Schema.String.pipe(Schema.check(Schema.isMaxLength(500))),
   urls: Schema.Array(Schema.String),
 });
 
@@ -59,9 +59,11 @@ export const ResumeSelfHealingInputSchema = Schema.Struct({
   auto_save: Schema.optional(Schema.Boolean),
 });
 
-export const TriggerCollectionInputSchema = Schema.Array(Schema.Struct({ url: Schema.String }));
+export const TriggerBatchCollectionInputSchema = Schema.Array(
+  Schema.Struct({ url: Schema.String }),
+);
 
-export const TriggerCollectionQuerySchema = Schema.Struct({
+export const TriggerBatchCollectionQuerySchema = Schema.Struct({
   collector: Schema.optional(Schema.String),
   version: Schema.optional(Schema.String),
   name: Schema.optional(Schema.String),
@@ -74,23 +76,51 @@ export const TriggerCollectionQuerySchema = Schema.Struct({
   deliver: Schema.optional(Schema.String),
 });
 
-export const TriggerCollectionResultSchema = Schema.Struct({
+export const TriggerBatchCollectionResultSchema = Schema.Struct({
   collection_id: Schema.String,
   start_eta: Schema.String,
 });
 
-export const DatasetQuerySchema = Schema.Struct({
+export const BatchDatasetQuerySchema = Schema.Struct({
   id: Schema.String,
 });
 
-export const DatasetBuildingSchema = Schema.Struct({
+export const BatchDatasetBuildingSchema = Schema.Struct({
   status: Schema.Literal("building"),
   message: Schema.String,
 });
 
-export const DatasetRecordSchema = Schema.Record(Schema.String, Schema.Unknown);
+export const BatchDatasetRecordSchema = Schema.Record(Schema.String, Schema.Unknown);
 
-export const DatasetResultSchema = Schema.Union([
-  DatasetBuildingSchema,
-  Schema.Array(DatasetRecordSchema),
+export const BatchDatasetResultSchema = Schema.Union([
+  BatchDatasetBuildingSchema,
+  BatchDatasetRecordSchema,
+]);
+
+export const TriggerImmediateQuerySchema = Schema.Struct({
+  collector: Schema.String,
+  version: Schema.optional(Schema.String),
+});
+
+export const TriggerImmediateInputSchema = Schema.Struct({
+  url: Schema.String,
+});
+
+export const TriggerImmediateResultSchema = Schema.Struct({
+  response_id: Schema.String,
+});
+
+export const GetTriggerImmediateResultQuerySchema = Schema.Struct({
+  response_id: Schema.String,
+  timeout: Schema.optional(Schema.String),
+});
+
+export const GetTriggerImmediateResultPendingSchema = Schema.Struct({
+  pending: Schema.Boolean,
+  message: Schema.String,
+});
+
+export const GetTriggerImmediateResultSchema = Schema.Union([
+  GetTriggerImmediateResultPendingSchema,
+  Schema.Array(Schema.Record(Schema.String, Schema.Unknown)),
 ]);

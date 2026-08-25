@@ -9,7 +9,12 @@
       "ESNext"
     ],
     "types": [
-      "@cloudflare/workers-types"
+      "./worker-configuration.d.ts"
+    ],
+    "plugins": [
+      {
+        "name": "@effect/language-service"
+      }
     ],
     "jsx": "react-jsx",
     "jsxImportSource": "hono/jsx"
