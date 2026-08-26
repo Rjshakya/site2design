@@ -33,7 +33,7 @@ export const extract = (input: ExtractInput, query: TriggerImmediateQuery) =>
     const rows = yield* Effect.repeat(bdService.getTriggerImmediateResult({ response_id }), {
       until: (result) => !isPending(result),
       times: 12,
-      schedule: Schedule.fixed("2 seconds")
+      schedule: Schedule.fixed("5 seconds")
     });
 
     console.log(rows)

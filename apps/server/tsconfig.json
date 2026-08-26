@@ -6,7 +6,8 @@
     "strict": true,
     "skipLibCheck": true,
     "lib": [
-      "ESNext"
+      "ESNext",
+      "dom"
     ],
     "types": [
       "./worker-configuration.d.ts"

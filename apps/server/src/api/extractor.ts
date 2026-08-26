@@ -12,6 +12,7 @@ import {
 import { InvalidExtractionError } from "../services/extractor/errors";
 import { ExtractInputSchema } from "../services/extractor/schema";
 import { extract } from "../services/extractor/service";
+import { buildDesignSystem } from "../services/design-system/service";
 
 // ─── Layer wiring ───────────────────────────────────────────────────────────
 
@@ -64,4 +65,26 @@ export const extractorRoutes = new Hono().post(
     if (!outcome.ok) return c.json({ error: outcome.message }, outcome.status);
     return c.json(outcome.result);
   },
-);
+)
+  .post(
+    "/design-system",
+    effectValidator("json", ExtractInputSchema),
+    async (c) => {
+      const input = c.req.valid("json");
+
+      const outcome = await runWithEnv(
+        buildDesignSystem(input.url.href).pipe(
+          Effect.match({
+            onFailure: (e) => {
+              console.error(e);
+              return { ok: false as const, ...errorStatus(e) };
+            },
+            onSuccess: (result) => ({ ok: true as const, result }),
+          }),
+        ),
+      );
+
+      if (!outcome.ok) return c.json({ error: outcome.message }, outcome.status);
+      return c.json(outcome.result);
+    },
+  );

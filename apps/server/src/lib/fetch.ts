@@ -19,13 +19,11 @@ export const apiFetch = <A>(input: ApiFetchInput, errorType: typeof ApiFetchErro
   const { apiToken, path, base_url, init } = input;
   const url = new URL(path, base_url);
 
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-    ...init?.headers,
-  };
+  const headers = new Headers(init?.headers);
+  headers.set("Content-Type", "application/json");
 
   if (apiToken) {
-    headers["Authorization"] = `Bearer ${apiToken}`;
+    headers.set("Authorization", `Bearer ${apiToken}`);
   }
 
   return Effect.tryPromise({

@@ -12,7 +12,10 @@
       "id": "0f2ec760632a46ec9c7698d205427c03",
       "localConnectionString": "postgres://site2design:site2design@localhost:5499/site2design"
     }
-  ]
+  ],
+  "browser": {
+    "binding": "MYBROWSER"
+  }
 
   // "vars": {
   //   "MY_VAR": "my-variable"
